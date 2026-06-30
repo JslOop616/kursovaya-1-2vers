@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Приход материалов — StockFlow{% endblock %}
+
+{% block content %}
+<div style="max-width: 700px; margin: 0 auto;">
+    <div class="card">
+        <div class="card-header">
+            <h1 class="card-title" style="font-size: 1.25rem;">Приход материалов</h1>
+            <p style="font-size: 0.875rem; color: #718096; margin-top: 0.25rem;">Оприходование новых материалов на склад</p>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-success" style="margin-bottom: 1.5rem;">
+                Заполните все поля формы для добавления нового прихода материалов.
+            </div>
+
+            <form method="post" id="receiptForm">
+                <div class="form-group">
+                    <label class="form-label">Материал</label>
+                    <select name="material_id" class="form-control" id="materialSelect" required>
+                        <option value="">Выберите материал...</option>
+                        {% for m in materials %}
+                        <option value="{{ m.id }}" data-current="{{ m.current_quantity }}">
+                            {{ m.name }} (доступно: {{ "%.0f"|format(m.current_quantity) }} шт)
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Поставщик</label>
+                    <select name="supplier_id" class="form-control" required>
+                        <option value="">Выберите поставщика...</option>
+                        {% for s in suppliers %}
+                        <option value="{{ s.id }}">{{ s.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div style="display: flex; gap: 1rem;">
+                    <div class="form-group" style="flex: 1;">
+                        <label class="form-label">Количество</label>
+                        <input type="number" step="0.01" name="quantity" class="form-control" id="quantity" placeholder="Введите количество" required>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label class="form-label">Цена за единицу (руб)</label>
+                        <input type="number" step="0.01" name="price" class="form-control" id="price" placeholder="0.00" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Комментарий</label>
+                    <textarea name="comment" class="form-control" placeholder="Дополнительная информация о поставке..."></textarea>
+                </div>
+
+                <div class="alert alert-success" id="totalInfo" style="display: none; text-align: center;">
+                    <strong>Итого сумма:</strong> <span id="totalAmount">0</span> руб
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Сохранить приход</button>
+            </form>
+
+            <div style="margin-top: 1rem; text-align: center;">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">На главную</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const quantityInput = document.getElementById('quantity');
+    const priceInput = document.getElementById('price');
+    const totalInfo = document.getElementById('totalInfo');
+    const totalAmount = document.getElementById('totalAmount');
+
+    function updateTotal() {
+        const quantity = parseFloat(quantityInput.value) || 0;
+        const price = parseFloat(priceInput.value) || 0;
+        const total = quantity * price;
+
+        if (total > 0) {
+            totalAmount.textContent = total.toFixed(2);
+            totalInfo.style.display = 'block';
+        } else {
+            totalInfo.style.display = 'none';
+        }
+    }
+
+    quantityInput.addEventListener('input', updateTotal);
+    priceInput.addEventListener('input', updateTotal);
+
+    const form = document.getElementById('receiptForm');
+    form.addEventListener('submit', function() {
+        const btn = this.querySelector('button[type="submit"]');
+        btn.innerHTML = 'Сохранение...';
+        btn.disabled = true;
+    });
+</script>
+{% endblock %}

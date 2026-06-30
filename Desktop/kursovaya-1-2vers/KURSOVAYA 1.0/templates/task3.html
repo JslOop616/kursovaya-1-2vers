@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Материал года — StockFlow{% endblock %}
+
+{% block content %}
+<div>
+    <div class="flex" style="margin-bottom: 1.5rem;">
+        <h1 style="font-size: 1.5rem; font-weight: 600;">Самый востребованный материал {{ current_year }}</h1>
+        <a href="{{ url_for('reports') }}" class="btn btn-secondary">← Назад к отчетам</a>
+    </div>
+
+    {% if error %}
+    <div class="card">
+        <div class="card-body text-center">
+            <p style="color: #718096;">{{ error }}</p>
+            <a href="{{ url_for('add_receipt') }}" class="btn btn-primary" style="margin-top: 1rem;">Добавить приход</a>
+        </div>
+    </div>
+    {% elif material %}
+    <div class="card" style="margin-bottom: 1.5rem; background: linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%); color: white;">
+        <div class="card-body">
+            <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem;">{{ material.material_name }}</h2>
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                <span class="badge" style="background: rgba(255,255,255,0.2);">{{ material.category }}</span>
+                <span class="badge" style="background: rgba(255,255,255,0.2);">{{ material.unit }}</span>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                <div>
+                    <div style="font-size: 0.75rem; opacity: 0.8;">Всего поставлено</div>
+                    <div style="font-size: 1.25rem; font-weight: 600;">{{ "%.0f"|format(material.total_quantity) }} {{ material.unit }}</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.75rem; opacity: 0.8;">Средняя цена</div>
+                    <div style="font-size: 1.25rem; font-weight: 600;">{{ "%.2f"|format(material.avg_price) }} руб</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.75rem; opacity: 0.8;">Израсходовано</div>
+                    <div style="font-size: 1.25rem; font-weight: 600;">{{ "%.0f"|format(material.used_quantity) }} {{ material.unit }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if monthly_data %}
+    <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-header">
+            <h2 class="card-title">Динамика поставок по месяцам</h2>
+        </div>
+        <div class="card-body">
+            <div style="display: flex; align-items: flex-end; gap: 0.5rem; height: 200px;">
+                {% set max_month = monthly_data|map(attribute='monthly_quantity')|max %}
+                {% set max_month = max_month if max_month > 0 else 1 %}
+                {% for month_num in range(1, 13) %}
+                    {% set month_str = '%02d'|format(month_num) %}
+                    {% set month_data = monthly_data|selectattr('month', 'equalto', month_str)|first %}
+                    {% set quantity = month_data.monthly_quantity if month_data else 0 %}
+                    {% set height = (quantity / max_month * 150) if max_month > 0 else 0 %}
+                    <div style="flex: 1; text-align: center;">
+                        <div style="height: {{ height }}px; background: #667eea; border-radius: 4px 4px 0 0; margin-bottom: 0.25rem; transition: height 0.3s;"></div>
+                        <div style="font-size: 0.75rem; color: #718096;">{{ month_num }}</div>
+                        <div style="font-size: 0.7rem; font-weight: 600;">{{ "%.0f"|format(quantity) }}</div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if suppliers %}
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Поставщики материала</h2>
+        </div>
+        <div class="card-body">
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Поставщик</th>
+                            <th>Количество поставок</th>
+                            <th>Всего поставлено</th>
+                            <th>Доля рынка</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in suppliers %}
+                        <tr>
+                            <td><strong>{{ s.name }}</strong></td>
+                            <td>{{ s.deliveries }} раз</td>
+                            <td>{{ "%.0f"|format(s.total) }} {{ material.unit }}</td>
+                            <td>
+                                {% if material.total_quantity > 0 %}
+                                    {{ "%.1f"|format(s.total / material.total_quantity * 100) }}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

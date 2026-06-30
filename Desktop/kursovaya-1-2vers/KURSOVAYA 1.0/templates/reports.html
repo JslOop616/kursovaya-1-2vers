@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Отчеты — StockFlow{% endblock %}
+
+{% block content %}
+<div>
+    <div class="flex" style="margin-bottom: 1.5rem;">
+        <h1 style="font-size: 1.5rem; font-weight: 600;">Аналитические отчеты</h1>
+    </div>
+
+    <div class="grid">
+        <a href="{{ url_for('task1') }}" style="text-decoration: none;">
+            <div class="card" style="transition: transform 0.2s;">
+                <div class="card-body">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">🏆</div>
+                    <h3 style="font-weight: 600; margin-bottom: 0.25rem;">Поставщик месяца</h3>
+                    <p style="font-size: 0.875rem; color: #718096;">Поставщик с максимальной суммой поставок в текущем месяце</p>
+                </div>
+            </div>
+        </a>
+
+        <a href="{{ url_for('task2') }}" style="text-decoration: none;">
+            <div class="card" style="transition: transform 0.2s;">
+                <div class="card-body">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">📅</div>
+                    <h3 style="font-weight: 600; margin-bottom: 0.25rem;">Операции за сегодня</h3>
+                    <p style="font-size: 0.875rem; color: #718096;">Все приходы и расходы за текущую дату</p>
+                </div>
+            </div>
+        </a>
+
+        <a href="{{ url_for('task3') }}" style="text-decoration: none;">
+            <div class="card" style="transition: transform 0.2s;">
+                <div class="card-body">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">📊</div>
+                    <h3 style="font-weight: 600; margin-bottom: 0.25rem;">Материал года</h3>
+                    <p style="font-size: 0.875rem; color: #718096;">Самый поставляемый материал в текущем году</p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    {% if session.role in ['admin', 'moderator'] %}
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Быстрые операции</h2>
+        </div>
+        <div class="card-body">
+            <div class="flex" style="justify-content: center; gap: 1rem;">
+                <a href="{{ url_for('add_receipt') }}" class="btn btn-success">+ Добавить приход</a>
+                <a href="{{ url_for('add_expense') }}" class="btn btn-danger">- Добавить расход</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

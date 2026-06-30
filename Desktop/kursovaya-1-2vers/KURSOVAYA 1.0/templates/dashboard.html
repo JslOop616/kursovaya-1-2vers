@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Дашборд — StockFlow{% endblock %}
+
+{% block content %}
+<div>
+    <div style="margin-bottom: 2rem;">
+        <h1 style="font-size: 1.5rem; font-weight: 600;">Добро пожаловать, {{ session.full_name or session.username }}</h1>
+        <p style="color: #718096; margin-top: 0.25rem;">Просмотр остатков материалов и отчетов</p>
+    </div>
+
+    <div class="grid">
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.total_materials }}</div>
+            <div class="stat-label">Всего материалов</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ "%.0f"|format(stats.total_value) }}</div>
+            <div class="stat-label">Общая стоимость склада, руб</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.low_stock_count }}</div>
+            <div class="stat-label">Материалов с низким остатком</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Текущие остатки на складе</h2>
+        </div>
+        <div class="card-body">
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Материал</th>
+                            <th>Категория</th>
+                            <th>Ед.изм</th>
+                            <th>Остаток</th>
+                            <th>Мин.запас</th>
+                            <th>Статус</th>
+                            <th>Место</th>
+                            <th>Цена</th>
+                            <th>Общая стоимость</th>
+                        </thead>
+                    <tbody>
+                        {% for m in materials %}
+                        <tr>
+                            <td><strong>{{ m.material_name }}</strong></td>
+                            <td>{{ m.category or '—' }}</td>
+                            <td>{{ m.unit }}</td>
+                            <td>{{ "%.0f"|format(m.current_quantity) }}</td>
+                            <td>{{ "%.0f"|format(m.min_quantity) }}</td>
+                            <td>
+                                {% if m.status == 'Требуется закупка' %}
+                                    <span class="badge badge-danger">Требуется закупка</span>
+                                {% else %}
+                                    <span class="badge badge-success">Норма</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ m.location or '—' }}</td>
+                            <td>{{ "%.2f"|format(m.price_per_unit) }} руб</td>
+                            <td>{{ "%.2f"|format(m.total_value) }} руб</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div style="margin-top: 1rem; text-align: center; color: #718096; font-size: 0.875rem;">
+                Всего материалов: {{ materials|length }}
+            </div>
+        </div>
+    </div>
+
+    {% if low_stock %}
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Внимание! Материалы с низким остатком</h2>
+        </div>
+        <div class="card-body">
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Материал</th>
+                            <th>Остаток</th>
+                            <th>Мин. запас</th>
+                            <th>Статус</th>
+                        </thead>
+                    <tbody>
+                        {% for m in low_stock %}
+                        <tr>
+                            <td><strong>{{ m.material_name }}</strong></td>
+                            <td>{{ "%.0f"|format(m.current_quantity) }} {{ m.unit }}</td>
+                            <td>{{ "%.0f"|format(m.min_quantity) }}</td>
+                            <td><span class="badge badge-danger">Требуется закупка</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Доступные отчеты</h2>
+        </div>
+        <div class="card-body">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                <a href="{{ url_for('task1') }}" style="text-decoration: none;">
+                    <div style="padding: 1rem; border: 1px solid #e2e8f0; border-radius: 0.5rem; text-align: center;">
+                        <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🏆</div>
+                        <div style="font-weight: 600;">Поставщик месяца</div>
+                        <div style="font-size: 0.75rem; color: #718096;">Поставщик с максимальной суммой поставок</div>
+                    </div>
+                </a>
+                <a href="{{ url_for('task2') }}" style="text-decoration: none;">
+                    <div style="padding: 1rem; border: 1px solid #e2e8f0; border-radius: 0.5rem; text-align: center;">
+                        <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">📅</div>
+                        <div style="font-weight: 600;">Операции за сегодня</div>
+                        <div style="font-size: 0.75rem; color: #718096;">Все операции за текущую дату</div>
+                    </div>
+                </a>
+                <a href="{{ url_for('task3') }}" style="text-decoration: none;">
+                    <div style="padding: 1rem; border: 1px solid #e2e8f0; border-radius: 0.5rem; text-align: center;">
+                        <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">📊</div>
+                        <div style="font-weight: 600;">Материал года</div>
+                        <div style="font-size: 0.75rem; color: #718096;">Самый поставляемый материал</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

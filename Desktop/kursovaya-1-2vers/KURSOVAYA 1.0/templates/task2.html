@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Операции за сегодня — StockFlow{% endblock %}
+
+{% block content %}
+<div>
+    <div class="flex" style="margin-bottom: 1.5rem;">
+        <h1 style="font-size: 1.5rem; font-weight: 600;">Операции за {{ today }}</h1>
+        <a href="{{ url_for('reports') }}" class="btn btn-secondary">← Назад к отчетам</a>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.total_count if stats else 0 }}</div>
+            <div class="stat-label">Всего операций</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.receipt_count if stats else 0 }}</div>
+            <div class="stat-label">Приходов</div>
+            <div style="font-size: 0.75rem;">{{ "%.0f"|format(stats.total_receipt) if stats else 0 }} ед</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.expense_count if stats else 0 }}</div>
+            <div class="stat-label">Расходов</div>
+            <div style="font-size: 0.75rem;">{{ "%.0f"|format(stats.total_expense) if stats else 0 }} ед</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">
+                {% if stats and stats.total_receipt and stats.total_expense %}
+                    {{ "%.0f"|format(stats.total_receipt - stats.total_expense) }}
+                {% elif stats and stats.total_receipt %}
+                    {{ "%.0f"|format(stats.total_receipt) }}
+                {% elif stats and stats.total_expense %}
+                    {{ "%.0f"|format(0 - stats.total_expense) }}
+                {% else %}
+                    0
+                {% endif %}
+            </div>
+            <div class="stat-label">Чистый приход</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Список операций</h2>
+        </div>
+        <div class="card-body">
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Время</th>
+                            <th>Тип</th>
+                            <th>Материал</th>
+                            <th>Количество</th>
+                            <th>Контрагент/Проект</th>
+                            <th>Комментарий</th>
+                        </thead>
+                    <tbody>
+                        {% for t in transactions %}
+                        <tr>
+                            <td>{{ t.date[11:16] if t.date else '—' }}</td>
+                            <td>
+                                {% if t.type == 'receipt' %}
+                                    <span class="badge badge-success">Приход</span>
+                                {% else %}
+                                    <span class="badge badge-danger">Расход</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ t.material_name }}</td>
+                            <td>{{ t.quantity }} {{ t.unit }}</td>
+                            <td>
+                                {% if t.type == 'receipt' %}
+                                    {{ t.supplier_name or '—' }}
+                                {% else %}
+                                    {{ t.project_name or '—' }}
+                                {% endif %}
+                            </td>
+                            <td>{{ t.comment or '—' }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center">Сегодня операций не было</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

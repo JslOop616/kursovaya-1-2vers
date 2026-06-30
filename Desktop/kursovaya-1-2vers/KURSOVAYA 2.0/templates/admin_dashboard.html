@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Админ-панель — StockFlow{% endblock %}
+
+{% block content %}
+<div>
+    <div class="flex" style="margin-bottom: 2rem;">
+        <h1 style="font-size: 1.5rem; font-weight: 600;">Панель управления</h1>
+        <div class="flex" style="gap: 0.5rem;">
+            <a href="{{ url_for('add_receipt') }}" class="btn btn-success">+ Приход</a>
+            <a href="{{ url_for('add_expense') }}" class="btn btn-danger">- Расход</a>
+            <a href="{{ url_for('reports') }}" class="btn btn-secondary">Отчеты</a>
+        </div>
+    </div>
+
+    <div class="grid">
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.total_users }}</div>
+            <div class="stat-label">Пользователей</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.total_materials }}</div>
+            <div class="stat-label">Материалов</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.total_transactions }}</div>
+            <div class="stat-label">Операций</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.total_suppliers }}</div>
+            <div class="stat-label">Поставщиков</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ "%.0f"|format(stats.total_value) }}</div>
+            <div class="stat-label">Общая стоимость склада, руб</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Последние операции в системе</h2>
+        </div>
+        <div class="card-body">
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Дата</th>
+                            <th>Пользователь</th>
+                            <th>Тип</th>
+                            <th>Материал</th>
+                            <th>Количество</th>
+                            <th>Комментарий</th>
+                        </thead>
+                    <tbody>
+                        {% for t in transactions %}
+                        <tr>
+                            <td>{{ t.date[:16] }}</td>
+                            <td>{{ t.username or '—' }}</td>
+                            <td>
+                                {% if t.type == 'receipt' %}
+                                    <span class="badge badge-success">Приход</span>
+                                {% else %}
+                                    <span class="badge badge-danger">Расход</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ t.material_name }}</td>
+                            <td>{{ t.quantity }} {{ t.unit }}</td>
+                            <td>{{ t.comment or '—' }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center">Нет операций</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Расход материалов — StockFlow{% endblock %}
+
+{% block content %}
+<div style="max-width: 700px; margin: 0 auto;">
+    <div class="card">
+        <div class="card-header">
+            <h1 class="card-title" style="font-size: 1.25rem;">Расход материалов</h1>
+            <p style="font-size: 0.875rem; color: #718096; margin-top: 0.25rem;">Списание и выдача материалов со склада</p>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-warning" style="margin-bottom: 1.5rem; background: #feebc8; border-color: #fbd38d; color: #c05621;">
+                Внимательно проверяйте остатки перед списанием. Операцию нельзя отменить!
+            </div>
+
+            <form method="post" id="expenseForm">
+                <div class="form-group">
+                    <label class="form-label">Материал</label>
+                    <select name="material_id" class="form-control" id="materialSelect" required>
+                        <option value="">Выберите материал...</option>
+                        {% for m in materials %}
+                        <option value="{{ m.id }}" data-current="{{ m.current_quantity }}" data-name="{{ m.name }}">
+                            {{ m.name }} (доступно: {{ "%.0f"|format(m.current_quantity) }} шт)
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="card" id="materialInfo" style="display: none; margin-bottom: 1rem; background: #faf5ff;">
+                    <div class="card-body" style="padding: 1rem;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="text-center">
+                                <div style="font-size: 0.75rem; color: #718096;">Текущий остаток</div>
+                                <div style="font-size: 1.25rem; font-weight: 600;" id="currentBalance">0</div>
+                            </div>
+                            <div class="text-center">
+                                <div style="font-size: 0.75rem; color: #718096;">Останется после</div>
+                                <div style="font-size: 1.25rem; font-weight: 600;" id="afterBalance">0</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 0.75rem; height: 4px; background: #e2e8f0; border-radius: 2px;">
+                            <div id="progressFill" style="width: 0%; height: 100%; background: #667eea; border-radius: 2px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Проект</label>
+                    <select name="project_id" class="form-control">
+                        <option value="">Без проекта</option>
+                        {% for p in projects %}
+                        <option value="{{ p.id }}">{{ p.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Количество</label>
+                    <input type="number" step="0.01" name="quantity" class="form-control" id="quantity" placeholder="Введите количество" required>
+                    <div id="balanceWarning" style="display: none; margin-top: 0.5rem; color: #e53e3e; font-size: 0.875rem;"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Комментарий (куда/зачем)</label>
+                    <textarea name="comment" class="form-control" placeholder="Например: Выдача Иванову И.И. для ремонта станка..." required></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-danger" style="width: 100%;" id="submitBtn">Списать материалы</button>
+            </form>
+
+            <div style="margin-top: 1rem; text-align: center;">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">На главную</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const materialSelect = document.getElementById('materialSelect');
+    const quantityInput = document.getElementById('quantity');
+    const materialInfo = document.getElementById('materialInfo');
+    const currentBalance = document.getElementById('currentBalance');
+    const afterBalance = document.getElementById('afterBalance');
+    const progressFill = document.getElementById('progressFill');
+    const balanceWarning = document.getElementById('balanceWarning');
+    const submitBtn = document.getElementById('submitBtn');
+
+    let currentQuantity = 0;
+
+    function updateMaterialInfo() {
+        const selected = materialSelect.options[materialSelect.selectedIndex];
+
+        if (materialSelect.value) {
+            currentQuantity = parseFloat(selected.dataset.current) || 0;
+            const requestedQty = parseFloat(quantityInput.value) || 0;
+
+            currentBalance.textContent = currentQuantity.toFixed(2);
+            materialInfo.style.display = 'block';
+            updateBalanceWarning(requestedQty);
+        } else {
+            materialInfo.style.display = 'none';
+            balanceWarning.style.display = 'none';
+        }
+    }
+
+    function updateBalanceWarning(requestedQty) {
+        if (requestedQty > 0 && materialSelect.value) {
+            const remaining = currentQuantity - requestedQty;
+            afterBalance.textContent = remaining.toFixed(2);
+
+            const percent = Math.min((requestedQty / currentQuantity) * 100, 100);
+            progressFill.style.width = percent + '%';
+
+            if (requestedQty > currentQuantity) {
+                balanceWarning.style.display = 'block';
+                balanceWarning.textContent = 'Недостаточно материалов! Доступно: ' + currentQuantity.toFixed(2) + ' шт';
+                submitBtn.disabled = true;
+                progressFill.style.background = '#e53e3e';
+            } else {
+                balanceWarning.style.display = 'none';
+                submitBtn.disabled = false;
+                progressFill.style.background = '#667eea';
+            }
+        } else {
+            afterBalance.textContent = currentQuantity.toFixed(2);
+            progressFill.style.width = '0%';
+            balanceWarning.style.display = 'none';
+            submitBtn.disabled = false;
+        }
+    }
+
+    materialSelect.addEventListener('change', function() {
+        quantityInput.value = '';
+        updateMaterialInfo();
+    });
+
+    quantityInput.addEventListener('input', function() {
+        const qty = parseFloat(this.value) || 0;
+        updateBalanceWarning(qty);
+    });
+
+    const form = document.getElementById('expenseForm');
+    form.addEventListener('submit', function(e) {
+        if (!submitBtn.disabled) {
+            const btn = this.querySelector('button[type="submit"]');
+            btn.innerHTML = 'Списание...';
+            btn.disabled = true;
+        }
+    });
+</script>
+{% endblock %}

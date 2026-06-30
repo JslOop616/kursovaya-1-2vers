@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Складской учет{% endblock %}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: #f7fafc;
+            color: #1a202c;
+            line-height: 1.5;
+        }
+
+        .navbar {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #2d3748;
+            text-decoration: none;
+        }
+
+        .logo span {
+            color: #667eea;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            color: #4a5568;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: color 0.2s;
+        }
+
+        .nav-link:hover {
+            color: #667eea;
+        }
+
+        .nav-link.disabled {
+            color: #cbd5e0;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-left: 1rem;
+            padding-left: 1rem;
+            border-left: 1px solid #e2e8f0;
+        }
+
+        .user-name {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #2d3748;
+        }
+
+        .user-role {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-weight: 500;
+        }
+
+        .role-admin {
+            background: #fed7d7;
+            color: #c53030;
+        }
+
+        .role-moderator {
+            background: #fef5e7;
+            color: #dd6b20;
+        }
+
+        .role-user {
+            background: #e6fffa;
+            color: #2c7a4d;
+        }
+
+        .logout-btn {
+            background: none;
+            border: none;
+            color: #e53e3e;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .logout-btn:hover {
+            color: #c53030;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 0.5rem;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            background: #fafbfc;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+            font-size: 0.875rem;
+            border-radius: 0.375rem;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a67d8;
+        }
+
+        .btn-secondary {
+            background: #edf2f7;
+            color: #4a5568;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .btn-danger {
+            background: #fc8181;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #f56565;
+        }
+
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #38a169;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th {
+            text-align: left;
+            padding: 0.75rem 1rem;
+            background: #f7fafc;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #4a5568;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #edf2f7;
+            font-size: 0.875rem;
+        }
+
+        .table tr:hover td {
+            background: #faf5ff;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.375rem;
+            font-weight: 500;
+            font-size: 0.875rem;
+            color: #2d3748;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .alert {
+            padding: 0.75rem 1rem;
+            border-radius: 0.375rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .alert-success {
+            background: #c6f6d5;
+            color: #22543d;
+            border: 1px solid #9ae6b4;
+        }
+
+        .alert-error {
+            background: #fed7d7;
+            color: #742a2a;
+            border: 1px solid #fc8181;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 0.5rem;
+            border: 1px solid #e2e8f0;
+            padding: 1.25rem;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #718096;
+            letter-spacing: 0.05em;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: #718096;
+            font-size: 0.75rem;
+            border-top: 1px solid #e2e8f0;
+            margin-top: 4rem;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .flex {
+            display: flex;
+            gap: 1rem;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .badge-success {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .badge-danger {
+            background: #fed7d7;
+            color: #c53030;
+        }
+
+        .badge-warning {
+            background: #feebc8;
+            color: #c05621;
+        }
+
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+            }
+            .nav-links {
+                justify-content: center;
+            }
+            .user-menu {
+                margin-left: 0;
+                padding-left: 0;
+                border-left: none;
+            }
+            .container {
+                padding: 0 1rem;
+            }
+            .flex {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% if session.user_id %}
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('dashboard') }}" class="logo">
+                Stock<span>Flow</span>
+            </a>
+            <div class="nav-links">
+                <a href="{{ url_for('dashboard') }}" class="nav-link">Главная</a>
+                <a href="{{ url_for('reports') }}" class="nav-link">Отчеты</a>
+
+                {% if session.role in ['admin', 'moderator'] %}
+                    <a href="{{ url_for('add_receipt') }}" class="nav-link">Приход</a>
+                    <a href="{{ url_for('add_expense') }}" class="nav-link">Расход</a>
+                    <a href="{{ url_for('admin_dashboard') }}" class="nav-link">Админ-панель</a>
+                {% else %}
+                    <span class="nav-link disabled">Приход</span>
+                    <span class="nav-link disabled">Расход</span>
+                {% endif %}
+
+                <div class="user-menu">
+                    <span class="user-name">{{ session.full_name or session.username }}</span>
+                    <span class="user-role role-{{ session.role }}">
+                        {% if session.role == 'admin' %}Администратор
+                        {% elif session.role == 'moderator' %}Модератор
+                        {% else %}Пользователь{% endif %}
+                    </span>
+                    <form action="{{ url_for('logout') }}" method="post" style="display: inline;">
+                        <button type="submit" class="logout-btn">Выйти</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer class="footer">
+        <p>StockFlow — Система учета материалов (v1.0)</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Поставщик месяца — StockFlow{% endblock %}
+
+{% block content %}
+<div>
+    <div class="flex" style="margin-bottom: 1.5rem;">
+        <h1 style="font-size: 1.5rem; font-weight: 600;">Поставщик месяца: {{ current_month }}</h1>
+        <a href="{{ url_for('reports') }}" class="btn btn-secondary">← Назад к отчетам</a>
+    </div>
+
+    {% if supplier %}
+    <div class="card" style="margin-bottom: 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+        <div class="card-body">
+            <h2 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem;">{{ supplier.supplier_name }}</h2>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
+                <div>
+                    <div style="font-size: 0.75rem; opacity: 0.8;">Сумма поставок</div>
+                    <div style="font-size: 1.5rem; font-weight: 600;">{{ "%.2f"|format(supplier.total_sum) }} руб</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.75rem; opacity: 0.8;">Количество поставок</div>
+                    <div style="font-size: 1.5rem; font-weight: 600;">{{ supplier.deliveries_count }}</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.75rem; opacity: 0.8;">Объем</div>
+                    <div style="font-size: 1.5rem; font-weight: 600;">{{ "%.0f"|format(supplier.total_quantity) }} ед</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.75rem; opacity: 0.8;">Рейтинг</div>
+                    <div style="font-size: 1.5rem; font-weight: 600;">{{ supplier.rating }}/5</div>
+                </div>
+            </div>
+            <div style="margin-top: 1rem; font-size: 0.875rem; opacity: 0.9;">
+                Контакт: {{ supplier.contact_person or 'Не указан' }} | {{ supplier.phone or 'Не указан' }}
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Поставки за месяц</h2>
+        </div>
+        <div class="card-body">
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Дата</th>
+                            <th>Материал</th>
+                            <th>Количество</th>
+                            <th>Цена</th>
+                            <th>Сумма</th>
+                        </thead>
+                    <tbody>
+                        {% for d in deliveries %}
+                        <tr>
+                            <td>{{ d.date[:10] }}</td>
+                            <td>{{ d.material_name }}</td>
+                            <td>{{ d.quantity }} {{ d.unit }}</td>
+                            <td>{{ "%.2f"|format(d.price_per_unit) }} руб</td>
+                            <td><strong>{{ "%.2f"|format(d.total) }} руб</strong></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="card">
+        <div class="card-body text-center">
+            <p style="color: #718096;">В этом месяце еще не было поставок</p>
+            <a href="{{ url_for('add_receipt') }}" class="btn btn-primary" style="margin-top: 1rem;">Добавить приход</a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
